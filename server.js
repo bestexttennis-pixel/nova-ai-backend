@@ -65,7 +65,7 @@ app.post("/api/chat", async (req, res) => {
       parts: [{ text: m.content }],
     }));
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
 
     const geminiResponse = await fetch(geminiUrl, {
       method: "POST",
