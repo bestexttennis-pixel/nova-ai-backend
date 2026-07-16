@@ -1,4 +1,4 @@
-// Nova AI — serveur backend
+// BestExt AI — serveur backend
 // - Gemini (gratuit) pour le modèle, dans les deux plans
 // - Plan gratuit : 40 messages / 5h, par IP
 // - Plan Pro : illimité, débloqué automatiquement après paiement Stripe
@@ -41,7 +41,7 @@ function checkAndIncrement(ip) {
 }
 
 const SYSTEM_PROMPT =
-  "Tu es Nova AI, un assistant conversationnel utile et chaleureux. Donne des réponses complètes, bien structurées (utilise des listes à puces, du gras avec ** et des paragraphes courts quand c'est utile) et informatives. Réponds toujours dans la langue de l'utilisateur.";
+  "Tu es BestExt AI, un assistant conversationnel utile et chaleureux. Donne des réponses complètes, bien structurées (utilise des listes à puces, du gras avec ** et des paragraphes courts quand c'est utile) et informatives. Réponds toujours dans la langue de l'utilisateur.";
 
 // ---- Création d'une session de paiement Stripe pour débloquer le Pro ----
 app.post("/api/create-checkout-session", async (req, res) => {
@@ -57,7 +57,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
     params.append("line_items[0][quantity]", "1");
     params.append("line_items[0][price_data][currency]", PRO_CURRENCY);
     params.append("line_items[0][price_data][unit_amount]", String(PRO_PRICE_CENTS));
-    params.append("line_items[0][price_data][product_data][name]", "Nova AI Pro — accès illimité");
+    params.append("line_items[0][price_data][product_data][name]", "BestExt AI Pro — accès illimité");
 
     const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
@@ -98,7 +98,7 @@ app.post("/api/chat", async (req, res) => {
       if (count > FREE_MESSAGE_LIMIT) {
         const minutes = Math.ceil(resetInMs / 60000);
         return res.status(429).json({
-          error: `Limite gratuite atteinte (${FREE_MESSAGE_LIMIT} messages / 5h). Réessaie dans ${minutes} min, ou passe en Nova AI Pro pour un accès illimité.`,
+          error: `Limite gratuite atteinte (${FREE_MESSAGE_LIMIT} messages / 5h). Réessaie dans ${minutes} min, ou passe en BestExt AI Pro pour un accès illimité.`,
         });
       }
     }
@@ -167,4 +167,4 @@ app.post("/api/chat", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Nova AI backend en écoute sur le port ${PORT}`));
+app.listen(PORT, () => console.log(`BestExt AI backend en écoute sur le port ${PORT}`));
