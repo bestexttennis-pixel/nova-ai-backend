@@ -84,13 +84,18 @@ app.post("/api/create-checkout-session", async (req, res) => {
 
 app.post("/api/chat", async (req, res) => {
   try {
-    const { messages, code } = req.body;
+    const { messages, code, lang } = req.body;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Le champ 'messages' est requis." });
     }
 
     const isPro = PRO_ACCESS_CODE && code && code === PRO_ACCESS_CODE;
+
+    const LANG_NAMES = { fr: "français", en: "anglais", es: "espagnol", pt: "portugais", de: "allemand", ar: "arabe" };
+    const langInstruction = lang && LANG_NAMES[lang]
+      ? ` Réponds impérativement en ${LANG_NAMES[lang]}, quelle que soit la langue utilisée par l'utilisateur.`
+      : "";
 
     if (!isPro) {
       const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
@@ -115,7 +120,7 @@ app.post("/api/chat", async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents,
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT + langInstruction }] },
         generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
       }),
     });
