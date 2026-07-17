@@ -1,9 +1,7 @@
 // BestExt AI — serveur backend
-// - Gemini (gratuit) pour le modèle, dans les deux plans
-// - Plan gratuit : 40 messages / 5h, par IP
-// - Plan Pro : illimité, débloqué automatiquement après paiement Stripe
-//   (Stripe Checkout crée une session de paiement ; après succès, l'utilisateur
-//   est renvoyé sur le site avec le code Pro directement dans l'URL)
+// Utilise l'API Google Gemini (gratuite) pour tout le monde.
+// Le niveau "Pro" ne change pas le modèle (toujours Gemini, donc $0 pour toi) :
+// il retire simplement la limite quotidienne de messages du niveau gratuit.
 
 const express = require("express");
 const cors = require("cors");
@@ -13,10 +11,11 @@ app.use(cors());
 app.use(express.json());
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
-const PRO_ACCESS_CODE = process.env.PRO_ACCESS_CODE;
+const PRO_ACCESS_CODE = process.env.PRO_ACCESS_CODE; // le code que tu donnes à tes clients payants
+const FREE_DAILY_LIMIT = parseInt(process.env.FREE_DAILY_LIMIT || "15", 10);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-const FRONTEND_URL = process.env.FRONTEND_URL; // ex: https://nova-ai.netlify.app
-const PRO_PRICE_CENTS = parseInt(process.env.PRO_PRICE_CENTS || "500", 10); // 500 = 5,00€
+const FRONTEND_URL = process.env.FRONTEND_URL;
+const PRO_PRICE_CENTS = parseInt(process.env.PRO_PRICE_CENTS || "500", 10);
 const PRO_CURRENCY = process.env.PRO_CURRENCY || "eur";
 
 const FREE_MESSAGE_LIMIT = 40;
