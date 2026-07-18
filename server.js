@@ -1,21 +1,22 @@
 // BestExt AI — serveur backend
-// Utilise l'API Google Gemini (gratuite) pour tout le monde.
-// Le niveau "Pro" ne change pas le modèle (toujours Gemini, donc $0 pour toi) :
-// il retire simplement la limite quotidienne de messages du niveau gratuit.
+// - Gemini (gratuit) pour le modèle, dans les deux plans
+// - Plan gratuit : 40 messages / 5h, par IP
+// - Plan Pro : illimité, débloqué automatiquement après paiement Stripe
+//   (Stripe Checkout crée une session de paiement ; après succès, l'utilisateur
+//   est renvoyé sur le site avec le code Pro directement dans l'URL)
 
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
-const PRO_ACCESS_CODE = process.env.PRO_ACCESS_CODE; // le code que tu donnes à tes clients payants
-const FREE_DAILY_LIMIT = parseInt(process.env.FREE_DAILY_LIMIT || "15", 10);
+const PRO_ACCESS_CODE = process.env.PRO_ACCESS_CODE;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-const FRONTEND_URL = process.env.FRONTEND_URL;
-const PRO_PRICE_CENTS = parseInt(process.env.PRO_PRICE_CENTS || "500", 10);
+const FRONTEND_URL = process.env.FRONTEND_URL; // ex: https://nova-ai.netlify.app
+const PRO_PRICE_CENTS = parseInt(process.env.PRO_PRICE_CENTS || "500", 10); // 500 = 5,00€
 const PRO_CURRENCY = process.env.PRO_CURRENCY || "eur";
 
 const FREE_MESSAGE_LIMIT = 40;
@@ -107,10 +108,19 @@ app.post("/api/chat", async (req, res) => {
       }
     }
 
-    const contents = messages.map((m) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    }));
+    const contents = messages.map((m) => {
+      const parts = [];
+      if (m.image && m.image.data && m.image.mimeType) {
+        parts.push({ inline_data: { mime_type: m.image.mimeType, data: m.image.data } });
+      }
+      if (m.content) {
+        parts.push({ text: m.content });
+      }
+      return {
+        role: m.role === "assistant" ? "model" : "user",
+        parts: parts.length ? parts : [{ text: "" }],
+      };
+    });
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
 
