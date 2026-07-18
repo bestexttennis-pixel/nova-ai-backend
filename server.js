@@ -84,7 +84,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
 
 app.post("/api/chat", async (req, res) => {
   try {
-    const { messages, code, lang } = req.body;
+    const { messages, code, lang, tone } = req.body;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Le champ 'messages' est requis." });
@@ -96,6 +96,14 @@ app.post("/api/chat", async (req, res) => {
     const langInstruction = lang && LANG_NAMES[lang]
       ? ` Réponds impérativement en ${LANG_NAMES[lang]}, quelle que soit la langue utilisée par l'utilisateur.`
       : "";
+
+    const TONE_INSTRUCTIONS = {
+      friendly: " Adopte un ton amical, chaleureux et décontracté.",
+      professional: " Adopte un ton professionnel, précis et formel.",
+      direct: " Sois direct et concis, va droit au but sans détours.",
+      motivating: " Adopte un ton motivant, encourageant et positif.",
+    };
+    const toneInstruction = tone && TONE_INSTRUCTIONS[tone] ? TONE_INSTRUCTIONS[tone] : "";
 
     if (!isPro) {
       const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
@@ -129,7 +137,7 @@ app.post("/api/chat", async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents,
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT + langInstruction }] },
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT + langInstruction + toneInstruction }] },
         generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
       }),
     });
